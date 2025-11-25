@@ -2,12 +2,11 @@ pipeline {
     agent any
 
     stages {
-        // Stage 1 is automatic (Declarative Checkout SCM)
 
         stage('Checkout Code') {
             steps {
-                // Use HTTPS URL and the PAT credential (ID: github-pat)
-                // This step replaces the previous complex SSH logic.
+                // Fetch code using HTTPS and the PAT credential (ID: github-pat)
+                // This resolves all prior SSH authentication issues.
                 git credentialsId: 'github-pat', url: 'https://github.com/Sindhura18/Playwright.git'
             }
         }
@@ -15,15 +14,19 @@ pipeline {
         stage('Setup and Run Tests') {
             steps {
                 sh """
-                # Change 'source' to '.' for POSIX compliance
+                # 1. Activate the Python Virtual Environment using the '.' command
                 . /home/ubuntu/my_automation_env/bin/activate
 
-                # Verify Python is active by printing the path
-                which python
-
+                # 2. Install dependencies
                 pip install -r requirements.txt
+
+                # 3. Run Playwright tests
                 pytest tests/
+
+                # 4. Deactivate the virtual environment
                 deactivate
                 """
             }
         }
+    }
+}
