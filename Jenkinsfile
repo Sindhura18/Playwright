@@ -15,12 +15,15 @@ pipeline {
         stage('Setup and Run Tests') {
             steps {
                 sh """
-                source /home/ubuntu/my_automation_env/bin/activate
+                # Change 'source' to '.' for POSIX compliance
+                . /home/ubuntu/my_automation_env/bin/activate
+
+                # Verify Python is active by printing the path
+                which python
+
                 pip install -r requirements.txt
                 pytest tests/
                 deactivate
                 """
             }
         }
-    }
-}
