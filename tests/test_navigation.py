@@ -6,7 +6,7 @@ def test_example_navigation():
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
-        page.goto("https://example.com")
+        page.goto("https://example.com", timeout=6000)
         page.click("a")  # Click the link
         assert "iana.org" in page.url
         browser.close()
