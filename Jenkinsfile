@@ -15,7 +15,7 @@ pipeline {
             steps {
                 sh """
                 # 1. Activate the Python Virtual Environment using the '.' command
-                . /home/ubuntu/my_automation_env/bin/activate
+                . /home/ubuntu/Playwright/venv/bin/activate
 
                 # 2. Install dependencies
                 pip install -r requirements.txt
