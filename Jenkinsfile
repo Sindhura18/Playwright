@@ -2,35 +2,34 @@ pipeline {
     agent any
 
     stages {
+        stage('Declarative: Checkout SCM') {
+            // This stage is automatic and uses HTTPS to get the Jenkinsfile.
+            // DO NOT PUT CUSTOM CODE HERE.
+        }
+
         stage('Checkout Code') {
             steps {
-                // *** 1. UPDATED REPOSITORY URL ***
-                git credentialsId: 'github-ssh-key', url: 'git@github.com:Sindhura18/Playwright.git'
+                // Force Git to ignore strict host key checking for this build run
+                sh 'git config --global core.sshCommand "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"'
+
+                // Use the sshagent wrapper to inject the private key
+                sshagent(['github-ssh-key']) {
+                    // Fetch the code using the SSH URL
+                    git credentialsId: 'github-ssh-key', url: 'git@github.com:Sindhura18/Playwright.git'
+                }
             }
         }
 
         stage('Setup and Run Tests') {
             steps {
                 sh """
-                # 1. Activate the Python virtual environment on the EC2 server
+                # Your environment setup commands remain here
                 source /home/ubuntu/my_automation_env/bin/activate
-
-                # 2. Install dependencies (if requirements.txt is in the repo root)
                 pip install -r requirements.txt
-
-                # *** 2. RUN PYTEST, POINTING TO THE 'tests' FOLDER ***
                 pytest tests/
-
-                # 3. Deactivate the environment
                 deactivate
                 """
             }
-        }
-    }
-
-    post {
-        always {
-            echo "Pipeline finished. Tests run successfully."
         }
     }
 }
