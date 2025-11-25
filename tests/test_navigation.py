@@ -7,6 +7,7 @@ def test_example_navigation():
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
         page.goto("https://example.com", timeout=6000)
+        page.wait_for_load_state("networkidle")
         page.click("a")  # Click the link
         assert "iana.org" in page.url
         browser.close()
