@@ -16,7 +16,7 @@ pipeline {
                 # 1. Create venv locally inside the Jenkins workspace (./venv)
                 python3 -m venv venv
 
-                # 2. Activate the venv from the local path
+                # 2. Activate the venv from the local path (Using '.' for shell compatibility)
                 . venv/bin/activate
 
                 # 3. Install dependencies (playwright will be installed here)
@@ -32,6 +32,28 @@ pipeline {
                 deactivate
                 """
             }
+        }
+    }
+
+    post {
+        // 'always' ensures these steps run regardless of the test failure/success
+        always {
+            // 1. Publish the main HTML report
+            // The report and screenshots are in the 'PythonProjecttest' directory.
+            publishHTML(target: [
+                allowMissing: false,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
+                reportDir: 'PythonProjecttest', // Confirmed folder name
+                reportFiles: 'report.html',     // Confirmed report file name
+                reportName: 'Playwright Report'
+            ])
+
+            // 2. Archive all artifacts, including the screenshots inside the report directory
+            archiveArtifacts artifacts: 'PythonProjecttest/**/*', fingerprint: true
+
+            // Optional: Clean up the workspace to free up disk space after the build
+            cleanWs()
         }
     }
 }
