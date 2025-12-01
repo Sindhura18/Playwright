@@ -1,4 +1,5 @@
 pipeline {
+    // Defines where the entire pipeline runs (Built-In Node/master)
     agent any
 
     stages {
@@ -16,13 +17,13 @@ pipeline {
                 # 1. Create venv locally inside the Jenkins workspace (./venv)
                 python3 -m venv venv
 
-                # 2. Activate the venv from the local path (Using '.' for shell compatibility)
+                # 2. Activate the venv from the local path
                 . venv/bin/activate
 
-                # 3. Install dependencies (playwright will be installed here)
+                # 3. Install dependencies
                 pip install -r requirements.txt
 
-                # 4. Install Playwright browser dependencies (CRITICAL STEP)
+                # 4. Install Playwright browser dependencies
                 playwright install
 
                 # 5. Run Playwright tests
@@ -36,24 +37,30 @@ pipeline {
     }
 
     post {
-        // 'always' ensures these steps run regardless of the test failure/success
+        // These steps run regardless of the test result
         always {
-            // 1. Publish the main HTML report
-            // The report and screenshots are in the 'PythonProjecttest' directory.
-            publishHTML(target: [
-                allowMissing: false,
-                alwaysLinkToLastBuild: true,
-                keepAll: true,
-                reportDir: 'PythonProjecttest', // Confirmed folder name
-                reportFiles: 'report.html',     // Confirmed report file name
-                reportName: 'Playwright Report'
-            ])
+            // CRITICAL FIX: The node block provides the FilePath context required for file operations.
+            node(label: 'master') {
 
-            // 2. Archive all artifacts, including the screenshots inside the report directory
-            archiveArtifacts artifacts: 'PythonProjecttest/**/*', fingerprint: true
+                // Use 'dir' to navigate into the report directory for publishing
+                dir('PythonProjecttest') {
+                    // 1. Publish the main HTML report
+                    publishHTML(target: [
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: '.', // Now relative to PythonProjecttest directory
+                        reportFiles: 'report.html',
+                        reportName: 'Playwright Report'
+                    ])
+                }
 
-            // Optional: Clean up the workspace to free up disk space after the build
-            cleanWs()
+                // 2. Archive all artifacts (screenshots, logs, etc.)
+                archiveArtifacts artifacts: 'PythonProjecttest/**/*', fingerprint: true
+
+                // 3. Clean up the entire workspace
+                cleanWs()
+            }
         }
     }
 }
