@@ -1,6 +1,6 @@
 pipeline {
     // Defines where the entire pipeline runs (Built-In Node/master)
-    agent { label 'EC2-Agent' }
+    agent any
 
     stages {
 
