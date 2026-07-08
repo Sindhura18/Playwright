@@ -1,0 +1,6 @@
+git
+workflow-aggregator
+credentials-binding
+htmlpublisher
+junit
+prometheus
