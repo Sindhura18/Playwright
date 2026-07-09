@@ -11,7 +11,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 echo "Fetching code from GitHub..."
-                git credentialsId: 'github-pat', url: 'https://github.com/Sindhura18/Playwright.git'
+                git url: 'https://github.com/Sindhura18/Playwright.git'
             }
         }
 
