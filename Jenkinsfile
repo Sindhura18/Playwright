@@ -28,13 +28,14 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                withCredentials([file(credentialsId: 'orangehrm-playwright-dotenv', variable: 'DOTENV_FILE')]) {
-                    sh """
-                    cp \$DOTENV_FILE .env
-                    . venv/bin/activate
-                    pytest tests/ --junitxml=test-results/junit-report.xml
-                    """
-                }
+                // .env lives outside the workspace, in the Jenkins container's
+                // persistent volume, since this pipeline only ever runs on the
+                // built-in node (no remote agents to distribute a credential to).
+                sh """
+                cp /var/jenkins_home/dotenv_upload.env .env
+                . venv/bin/activate
+                pytest tests/ --junitxml=test-results/junit-report.xml
+                """
             }
         }
     }
