@@ -2,6 +2,8 @@ from utils.locators import Inputs, MessageDetailLocators
 
 
 class MessageDetailPage:
+    """Mailinator message detail view (raw source/headers)."""
+
     def __init__(self, page):
         self.page = page
 
@@ -10,8 +12,9 @@ class MessageDetailPage:
 
     def get_raw_source_text(self):
         self.page.wait_for_function(
-            "() => { const el = document.querySelector('%s'); "
-            "return !!el && el.textContent.trim() !== ''; }" % MessageDetailLocators.RAW_CONTENT_PANE,
+            "(id) => { const el = document.getElementById(id); "
+            "return !!el && el.textContent.trim() !== ''; }",
+            arg=MessageDetailLocators.RAW_CONTENT_PANE_ID,
             timeout=Inputs.LONG_TIMEOUT,
         )
         return self.page.locator(MessageDetailLocators.RAW_CONTENT_PANE).text_content()

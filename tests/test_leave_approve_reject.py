@@ -3,6 +3,8 @@ import datetime
 import pytest
 from playwright.sync_api import expect
 
+from utils.locators import CommonLocators
+
 # This is a shared public demo instance that many other automated test suites hit
 # concurrently (visible in seeded comments like "Automated leave request via Selenium").
 # Leave requests created here via Assign Leave were confirmed (via direct inspection)
@@ -83,7 +85,7 @@ def test_reject_next_pending_request(pages):
 def test_filter_by_employee_name_narrows_results(pages):
     rows = _pending_approval_rows(pages)
     total_count = rows.count()
-    employee_name = rows.first.locator(".oxd-table-cell").nth(2).text_content().strip().split()[0]
+    employee_name = rows.first.locator(CommonLocators.TABLE_CELL).nth(2).text_content().strip().split()[0]
 
     pages.leave_list.goto_list()
     pages.leave_list.fill_filter_employee_name(employee_name)

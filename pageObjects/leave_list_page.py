@@ -3,6 +3,8 @@ from utils.locators import Inputs, CommonLocators, LeaveListLocators
 
 
 class LeaveListPage:
+    """Leave > Apply, Assign Leave, and Leave List (approve/reject/filter)."""
+
     def __init__(self, page, base_url):
         self.page = page
         self.base_url = base_url
@@ -74,10 +76,10 @@ class LeaveListPage:
         self.get_autocomplete_options().first.click()
 
     def click_search(self):
-        self.page.get_by_role("button", name="Search").click()
+        self.page.get_by_role("button", name=LeaveListLocators.SEARCH_BUTTON_TEXT).click()
 
     def click_reset(self):
-        self.page.get_by_role("button", name="Reset").click()
+        self.page.get_by_role("button", name=LeaveListLocators.RESET_BUTTON_TEXT).click()
 
     def get_table_rows(self):
         return self.page.locator(CommonLocators.TABLE_ROW)

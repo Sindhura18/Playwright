@@ -1,5 +1,7 @@
 from playwright.sync_api import expect
 
+from utils.locators import CommonLocators
+
 
 def test_search_by_employee_name(pages):
     # A broad single-letter query is used rather than a fixed name because this
@@ -21,7 +23,7 @@ def test_search_by_employee_id(pages):
     pages.employee_list.fill_search_employee_name("e")
     pages.employee_list.get_autocomplete_options().first.click()
     pages.employee_list.click_search()
-    employee_id = pages.employee_list.get_table_rows().first.locator(".oxd-table-cell").nth(1).text_content().strip()
+    employee_id = pages.employee_list.get_table_rows().first.locator(CommonLocators.TABLE_CELL).nth(1).text_content().strip()
 
     pages.employee_list.goto()
     pages.employee_list.fill_search_employee_id(employee_id)

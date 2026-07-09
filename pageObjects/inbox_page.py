@@ -2,6 +2,8 @@ from utils.locators import Inputs, InboxLocators
 
 
 class InboxPage:
+    """Mailinator public inbox message list."""
+
     def __init__(self, page):
         self.page = page
 
@@ -15,16 +17,16 @@ class InboxPage:
 
     def get_row_subject(self, row_index):
         row = self.get_message_rows().nth(row_index)
-        return row.locator("td").nth(InboxLocators.ROW_SUBJECT_CELL_INDEX).text_content()
+        return row.locator(InboxLocators.TABLE_DATA_CELL).nth(InboxLocators.ROW_SUBJECT_CELL_INDEX).text_content()
 
     def get_row_from(self, row_index):
         row = self.get_message_rows().nth(row_index)
-        return row.locator("td").nth(InboxLocators.ROW_FROM_CELL_INDEX).text_content()
+        return row.locator(InboxLocators.TABLE_DATA_CELL).nth(InboxLocators.ROW_FROM_CELL_INDEX).text_content()
 
     def get_all_subjects(self):
         rows = self.get_message_rows()
         return [
-            rows.nth(i).locator("td").nth(InboxLocators.ROW_SUBJECT_CELL_INDEX).text_content()
+            rows.nth(i).locator(InboxLocators.TABLE_DATA_CELL).nth(InboxLocators.ROW_SUBJECT_CELL_INDEX).text_content()
             for i in range(rows.count())
         ]
 
@@ -38,10 +40,9 @@ class InboxPage:
         self.goto(inbox_name)
 
     def wait_for_message(self, subject, timeout=Inputs.EMAIL_DELIVERY_TIMEOUT):
-        # SMTP submission returning success only means Gmail accepted the message for
-        # relay - actual delivery into the Mailinator inbox can take anywhere from a
-        # few seconds to tens of seconds, so this polls the live (auto-updating) inbox
-        # list rather than assuming the message is already there.
+        """Polls the live, auto-updating inbox list for a subject rather than assuming
+        it's already there - SMTP accepting a message only means it was queued for
+        relay, delivery into Mailinator can still take seconds to tens of seconds."""
         self.page.wait_for_function(
             "(subject) => Array.from("
             "document.querySelectorAll('.wrapper-primary-table.scrollbar table tbody tr')"

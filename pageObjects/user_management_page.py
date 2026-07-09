@@ -2,6 +2,8 @@ from utils.locators import Inputs, CommonLocators, UserManagementLocators
 
 
 class UserManagementPage:
+    """Admin > User Management (System Users): search, bulk actions, add user."""
+
     def __init__(self, page, base_url):
         self.page = page
         self.base_url = base_url
@@ -19,7 +21,7 @@ class UserManagementPage:
         return self.page.locator(CommonLocators.INPUT_GROUP)
 
     def fill_search_username(self, username):
-        self._input_groups().nth(UserManagementLocators.USERNAME_FIELD_INDEX).locator("input").fill(username)
+        self._input_groups().nth(UserManagementLocators.USERNAME_FIELD_INDEX).locator(CommonLocators.GENERIC_INPUT).fill(username)
 
     def select_search_user_role(self, role_text):
         group = self._input_groups().nth(UserManagementLocators.USER_ROLE_FIELD_INDEX)
@@ -32,10 +34,10 @@ class UserManagementPage:
         self.page.locator(CommonLocators.SELECT_OPTION).get_by_text(status_text, exact=True).click()
 
     def click_search(self):
-        self.page.get_by_role("button", name="Search").click()
+        self.page.get_by_role("button", name=UserManagementLocators.SEARCH_BUTTON_TEXT).click()
 
     def click_reset(self):
-        self.page.get_by_role("button", name="Reset").click()
+        self.page.get_by_role("button", name=UserManagementLocators.RESET_BUTTON_TEXT).click()
 
     def click_add(self):
         self.page.get_by_role("button", name=UserManagementLocators.ADD_BUTTON_TEXT, exact=True).click()
@@ -73,6 +75,8 @@ class UserManagementPage:
         self.page.locator(CommonLocators.SELECT_OPTION).get_by_text(role_text, exact=True).click()
 
     def fill_add_employee_name(self, name):
+        """Types into the employee-name autocomplete and waits for a real (non-loading)
+        suggestion before selecting the first one."""
         auto_input = self.page.locator(CommonLocators.AUTOCOMPLETE_INPUT).first
         auto_input.type(name, delay=30)
         self.page.wait_for_selector(CommonLocators.AUTOCOMPLETE_OPTION, timeout=Inputs.DEFAULT_TIMEOUT)
@@ -87,13 +91,13 @@ class UserManagementPage:
         self.page.locator(CommonLocators.SELECT_OPTION).get_by_text(status_text, exact=True).click()
 
     def fill_add_username(self, username):
-        self.page.locator("input.oxd-input").nth(1).fill(username)
+        self.page.locator(CommonLocators.GENERIC_OXD_INPUT).nth(UserManagementLocators.ADD_USERNAME_INPUT_INDEX).fill(username)
 
     def fill_add_password(self, password):
-        self.page.locator("input.oxd-input").nth(2).fill(password)
+        self.page.locator(CommonLocators.GENERIC_OXD_INPUT).nth(UserManagementLocators.ADD_PASSWORD_INPUT_INDEX).fill(password)
 
     def fill_add_confirm_password(self, password):
-        self.page.locator("input.oxd-input").nth(3).fill(password)
+        self.page.locator(CommonLocators.GENERIC_OXD_INPUT).nth(UserManagementLocators.ADD_CONFIRM_PASSWORD_INPUT_INDEX).fill(password)
 
     def click_save(self):
         self.page.get_by_role("button", name=UserManagementLocators.SAVE_BUTTON_TEXT).click()

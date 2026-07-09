@@ -1,6 +1,7 @@
 from playwright.sync_api import expect
 
 from utils.helpers import unique_suffix
+from utils.locators import CommonLocators
 
 
 def _add_employee(pages, first_name, last_name):
@@ -66,13 +67,19 @@ def test_bulk_delete_created_employees(pages):
     # time (no shared-prefix/substring matching), and a freshly created employee isn't
     # on page 1 of the default (100+ employee) unfiltered list, so simultaneous
     # multi-row selection is exercised against two existing rows from that list instead.
+    # Whichever row is the logged-in Admin's own linked employee has no delete action
+    # (same self-protection rule as Admin Users), so rows are picked by actually having
+    # one rather than assuming fixed positions.
     pages.employee_list.goto()
     rows = pages.employee_list.get_table_rows()
-    employee_id_1 = rows.nth(0).locator(".oxd-table-cell").nth(1).text_content().strip()
-    employee_id_2 = rows.nth(1).locator(".oxd-table-cell").nth(1).text_content().strip()
+    deletable_indexes = [
+        i for i in range(rows.count()) if rows.nth(i).locator(CommonLocators.ROW_ACTION_DELETE).count() > 0
+    ][:2]
+    employee_id_1 = rows.nth(deletable_indexes[0]).locator(CommonLocators.TABLE_CELL).nth(1).text_content().strip()
+    employee_id_2 = rows.nth(deletable_indexes[1]).locator(CommonLocators.TABLE_CELL).nth(1).text_content().strip()
 
-    pages.employee_list.select_row_checkbox(0)
-    pages.employee_list.select_row_checkbox(1)
+    pages.employee_list.select_row_checkbox(deletable_indexes[0])
+    pages.employee_list.select_row_checkbox(deletable_indexes[1])
     pages.employee_list.click_delete_selected()
     pages.employee_list.confirm_delete()
     expect(pages.employee_list.get_toast()).to_contain_text("Successfully Deleted", timeout=10000)

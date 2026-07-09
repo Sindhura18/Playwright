@@ -1,6 +1,7 @@
 from playwright.sync_api import expect
 
 from utils.helpers import unique_suffix
+from utils.locators import CommonLocators
 
 
 def _add_throwaway_user(pages, username):
@@ -64,8 +65,8 @@ def test_bulk_delete_multiple_selected_users(pages):
     # to exercise genuine multi-row bulk selection in a single action.
     pages.user_management.goto()
     rows = pages.user_management.get_table_rows()
-    username_1 = rows.nth(1).locator(".oxd-table-cell").nth(1).text_content().strip()
-    username_2 = rows.nth(2).locator(".oxd-table-cell").nth(1).text_content().strip()
+    username_1 = rows.nth(1).locator(CommonLocators.TABLE_CELL).nth(1).text_content().strip()
+    username_2 = rows.nth(2).locator(CommonLocators.TABLE_CELL).nth(1).text_content().strip()
 
     pages.user_management.select_row_checkbox(1)
     pages.user_management.select_row_checkbox(2)

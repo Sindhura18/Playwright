@@ -10,6 +10,7 @@ from pageObjects.login_page import LoginPage
 from pageObjects.user_management_page import UserManagementPage
 from pageObjects.employee_list_page import EmployeeListPage
 from pageObjects.leave_list_page import LeaveListPage
+from utils.locators import LoginLocators
 
 load_dotenv()
 
@@ -20,12 +21,14 @@ HEADLESS = os.getenv("HEADLESS", "true").lower() != "false"
 
 
 def _ensure_screenshot_dir():
+    """Creates screenshots/ on first use (git-ignored, holds failure captures)."""
     if not os.path.exists("screenshots"):
         os.makedirs("screenshots")
 
 
 @pytest.fixture(scope="session")
 def logger():
+    """Console logger shared across the whole test session."""
     log = logging.getLogger("orangehrm_suite")
     if not log.handlers:
         handler = logging.StreamHandler()
@@ -37,12 +40,15 @@ def logger():
 
 @pytest.fixture(scope="session")
 def playwright_instance():
+    """The sync_playwright driver, started once for the whole session."""
     with sync_playwright() as p:
         yield p
 
 
 @pytest.fixture(scope="session")
 def browser(playwright_instance):
+    """One Chromium process for the whole session; individual test files get
+    isolation via their own browser context, not a new browser process."""
     browser = playwright_instance.chromium.launch(headless=HEADLESS)
     yield browser
     browser.close()
@@ -66,7 +72,7 @@ def orangehrm_login(browser, logger):
     page = context.new_page()
     login_page = LoginPage(page, ORANGEHRM_URL)
     login_page.login(ORANGEHRM_USER, ORANGEHRM_PASS)
-    page.wait_for_selector("h6.oxd-text--h6", timeout=30000)
+    page.wait_for_selector(LoginLocators.DASHBOARD_LOADED_INDICATOR, timeout=30000)
     logger.info("Logged into OrangeHRM as %s", ORANGEHRM_USER)
     yield page
     context.close()
@@ -74,6 +80,7 @@ def orangehrm_login(browser, logger):
 
 @dataclass
 class OrangeHRMPages:
+    """Page objects bound to the one module-scoped authenticated page."""
     login: LoginPage
     user_management: UserManagementPage
     employee_list: EmployeeListPage
@@ -82,6 +89,8 @@ class OrangeHRMPages:
 
 @pytest.fixture(scope="module")
 def pages(orangehrm_login):
+    """Bundles page objects for the shared authenticated page so tests don't
+    re-instantiate them individually."""
     page = orangehrm_login
     return OrangeHRMPages(
         login=LoginPage(page, ORANGEHRM_URL),
@@ -93,6 +102,7 @@ def pages(orangehrm_login):
 
 @pytest.fixture(scope="module")
 def mailinator_page(browser):
+    """A fresh, unauthenticated context/page for the Mailinator test files."""
     context = browser.new_context()
     page = context.new_page()
     yield page
@@ -101,6 +111,8 @@ def mailinator_page(browser):
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
+    """Attaches a screenshot of whichever page fixture a test used to the HTML
+    report on failure."""
     outcome = yield
     report = outcome.get_result()
 

@@ -1,7 +1,9 @@
-from utils.locators import Inputs, LoginLocators
+from utils.locators import Inputs, CommonLocators, LoginLocators
 
 
 class LoginPage:
+    """OrangeHRM login page."""
+
     def __init__(self, page, base_url):
         self.page = page
         self.base_url = base_url
@@ -31,7 +33,7 @@ class LoginPage:
         return self.page.locator(LoginLocators.ERROR_ALERT)
 
     def get_field_errors(self):
-        return self.page.locator("css=.oxd-input-field-error-message")
+        return self.page.locator(CommonLocators.FIELD_ERROR_MESSAGE)
 
     def get_username_value(self):
         return self.page.locator(LoginLocators.USERNAME_INPUT).input_value()
