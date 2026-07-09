@@ -10,6 +10,7 @@ ORANGEHRM_PASS = os.getenv("ORANGEHRM_PASS", "admin123")
 
 
 def test_valid_login_reaches_dashboard(fresh_page, logger):
+    assert False, "Deliberate failure to demo Grafana failure visibility - reverted next commit"
     login_page = LoginPage(fresh_page, ORANGEHRM_URL)
     login_page.login(ORANGEHRM_USER, ORANGEHRM_PASS)
 
