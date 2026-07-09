@@ -132,6 +132,36 @@ A self-contained HTML report is written to `report.html` after every run
 (`pytest.ini` sets `--html=report.html --self-contained-html`), and failure
 screenshots land in `screenshots/` (both gitignored).
 
+## Continuous monitoring: Jenkins + Prometheus + Grafana
+
+The `Jenkinsfile` in this repo isn't just for one-off CI runs — it's wired up to re-run
+the whole suite every 2 hours via a cron trigger, with the results flowing into a small
+monitoring stack so you can see health trends over time instead of just the latest
+build.
+
+```
+Jenkins (cron every 2h, runs pytest)
+   │  exposes build/test metrics at /prometheus (Jenkins Prometheus plugin)
+   ▼
+Prometheus (scrapes Jenkins every 30s)
+   ▼
+Grafana (dashboard: pass/fail counts, build duration, health score, result history)
+```
+
+Everything lives under `monitoring/`: a `docker-compose.yml` running all three
+services, a custom Jenkins image (`monitoring/jenkins/Dockerfile`) with Python and
+Playwright's Chromium dependencies pre-installed so builds don't need a nested Docker
+agent, and Grafana provisioning files so the Prometheus datasource is wired up
+automatically on first boot. It's deliberately sized for a small instance — a t3/t2.micro
+with a 4GB swap file handles all three containers plus a full Playwright test run,
+just slowly.
+
+This runs on its own EC2 instance, separate from wherever you run the test suite
+locally. Screenshots of the Grafana dashboard live in `monitoring/screenshots/`,
+including one from a build where a test was deliberately broken to confirm failures
+actually show up (health score drops, the result panel turns red) rather than
+silently vanishing.
+
 ## Known limitations of a shared public demo
 
 OrangeHRM's demo is public, and everyone automating against it is changing its data at
