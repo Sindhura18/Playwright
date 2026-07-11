@@ -70,9 +70,16 @@ def orangehrm_login(browser, logger):
     test in that file to reuse."""
     context = browser.new_context()
     page = context.new_page()
-    login_page = LoginPage(page, ORANGEHRM_URL)
-    login_page.login(ORANGEHRM_USER, ORANGEHRM_PASS)
-    page.wait_for_selector(LoginLocators.DASHBOARD_LOADED_INDICATOR, timeout=30000)
+    try:
+        login_page = LoginPage(page, ORANGEHRM_URL)
+        login_page.login(ORANGEHRM_USER, ORANGEHRM_PASS)
+        page.wait_for_selector(LoginLocators.DASHBOARD_LOADED_INDICATOR, timeout=30000)
+    except Exception:
+        _ensure_screenshot_dir()
+        page.screenshot(path="screenshots/orangehrm_login_setup_failure.png")
+        logger.error("orangehrm_login fixture failed to reach the dashboard", exc_info=True)
+        context.close()
+        raise
     logger.info("Logged into OrangeHRM as %s", ORANGEHRM_USER)
     yield page
     context.close()
@@ -112,11 +119,11 @@ def mailinator_page(browser):
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
     """Attaches a screenshot of whichever page fixture a test used to the HTML
-    report on failure."""
+    report on failure, on both setup and call failures."""
     outcome = yield
     report = outcome.get_result()
 
-    if report.when == "call" and report.failed:
+    if report.when in ("setup", "call") and report.failed:
         page = None
         for fixture_name in ("orangehrm_login", "fresh_page", "mailinator_page"):
             candidate = item.funcargs.get(fixture_name)
@@ -125,7 +132,7 @@ def pytest_runtest_makereport(item, call):
                 break
         if page:
             _ensure_screenshot_dir()
-            screenshot_path = f"screenshots/{item.name}.png"
+            screenshot_path = f"screenshots/{report.when}_{item.name}.png"
             page.screenshot(path=screenshot_path)
             if hasattr(report, "extra"):
                 report.extra.append(pytest.html.extras.image(screenshot_path))

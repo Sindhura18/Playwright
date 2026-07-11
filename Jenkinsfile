@@ -53,7 +53,7 @@ pipeline {
                 reportName: 'Playwright HTML Report'
             ])
 
-            archiveArtifacts artifacts: 'report.html, screenshots/**', allowEmptyArchive: true, fingerprint: true
+            archiveArtifacts artifacts: 'report.html,screenshots/**,test-results/**', allowEmptyArchive: true, fingerprint: true
             cleanWs()
         }
     }

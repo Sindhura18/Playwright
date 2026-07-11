@@ -2,8 +2,7 @@
 
 A Page-Object-Model test suite built with Playwright's sync API and pytest. It covers
 search, filtering, bulk actions, approve/reject workflows, CRUD, and detail-view
-validation against two public targets, plus a send-and-verify email flow built on real
-SMTP and a public inbox.
+validation against two public targets, plus a send-and-verify email flow built on real SMTP and a public inbox.
 
 ## What this tests, and why these two targets
 
@@ -14,8 +13,7 @@ SMTP and a public inbox.
 
 OrangeHRM is a common practice target — plenty of tutorials automate its login form,
 and that's fine. This project isn't trying to prove the app is testable; it obviously
-is. The point is to show a consistent set of engineering decisions applied across a
-real, moderately complex app:
+is. The point is to show a consistent set of engineering decisions applied across a real, moderately complex app:
 
 - Page objects only hold locators and interaction methods — no assertions live there.
   Every `expect(...)` and every multi-step workflow ("assign leave → filter → approve →
@@ -160,7 +158,26 @@ This runs on its own EC2 instance, separate from wherever you run the test suite
 locally. Screenshots of the Grafana dashboard live in `monitoring/screenshots/`,
 including one from a build where a test was deliberately broken to confirm failures
 actually show up (health score drops, the result panel turns red) rather than
-silently vanishing.
+silently vanishing, and one ([`dashboard_40h_history.png`](monitoring/screenshots/dashboard_40h_history.png))
+covering 22 real cron builds accumulated over 40 unattended hours ([`jenkins_build_history.png`](monitoring/screenshots/jenkins_build_history.png)
+shows the same run list on the Jenkins side).
+
+That 40-hour window is worth being honest about: only 6 of the 22 builds came back
+fully green. The rest weren't a regression in the suite — they're what actually
+happens when you point real browsers at a shared public demo and send real email
+through a real inbox, unattended, every 2 hours for two days straight. The clearest
+pattern is `test_message_detail_and_headers.py` failing all 5 of its tests together
+in about a third of the runs, which lines up with Gmail/Mailinator delivery lag
+under repeated automated sending rather than anything in the test code. A few other
+failures track ordinary shared-demo slowness (locator timeouts on a congested
+instance) or state built up by 22 runs' worth of other automation. None of this was
+smoothed over — it's exactly why the dashboard exists.
+
+To make failures like these actually debuggable from Jenkins instead of just visible
+as a red build, the failure-screenshot hook in `conftest.py` captures on both fixture
+*setup* failures (e.g. a login timeout) and test *call* failures, and
+`archiveArtifacts` in the `Jenkinsfile` picks up everything under `screenshots/**`
+and `test-results/**` alongside the HTML report on every build, pass or fail.
 
 ## Known limitations of a shared public demo
 
